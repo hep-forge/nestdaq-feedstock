@@ -19,6 +19,8 @@ source:
 build:
   number: 0
   skip: true  # [not linux]
+  run_exports:
+    - {{ pin_subpackage("nestdaq", max_pin="x.x.x") }}
 
 requirements:
   build:

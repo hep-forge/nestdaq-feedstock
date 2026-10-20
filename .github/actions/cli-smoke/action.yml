@@ -20,6 +20,6 @@ runs:
         CONDA_CHANNEL_PRIORITY: strict
         CPU_COUNT: '2'
       run: >-
-        conda build recipe --no-anaconda-upload
+        conda-build recipe --no-anaconda-upload
         --override-channels -c hep-forge -c conda-forge
         --output-folder build_artifacts

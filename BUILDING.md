@@ -6,7 +6,7 @@ on the [hep-forge](https://anaconda.org/hep-forge) channel.
 ## Build
 
 ```bash
-conda build recipe --override-channels -c hep-forge -c conda-forge
+conda-build recipe --override-channels -c hep-forge -c conda-forge
 ```
 
 The recipe builds NestDAQ against conda packages, including redis-plus-plus

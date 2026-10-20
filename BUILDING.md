@@ -39,15 +39,24 @@ conda install -c hep-forge -c conda-forge nestdaq
 
 ## Tests and pull requests
 
-The canonical hep-forge workflow runs only for numeric release tags. Opening
-or updating a pull request does not start a build or run tests. Manual dispatch
-at a branch is skipped; dispatch at a release tag runs the workflow.
+The separate `CLI smoke tests` workflow runs on pull requests and manual dispatch.
+It builds the conda package on AMD64 first, then ARM64, and runs the installed
+package's recipe tests. It uses read-only repository permissions and does not
+upload or publish packages. The canonical hep-forge release workflow is unchanged
+and still runs only at numeric release tags.
 
-Each enabled release build runs conda-build, including the recipe tests:
-installed plugin and web asset checks, example executable help commands,
-and controller help output/status checks. These are package smoke tests,
-not upstream unit tests or Redis integration tests. AMD64 still needs CI
-validation; the initial ARM64 conda package passed its recipe tests locally.
+Recipe tests check installed plugins and web assets plus seven CLI cases:
+`Sampler`, `Sink`, and `NullDevice` help, both controller help flags, an unknown
+controller option, and a missing option value. Each CLI invocation has a 15-second
+timeout. Help must return zero without starting Redis or the web server; invalid
+arguments must return one with a useful diagnostic. The CLI help patch ensures
+normal help exits successfully before controller service initialization.
 
-The initial ARM64 package was validated before adding the run_exports metadata;
-the compliance commit changes metadata and documentation, not application code.
+These are package smoke tests, not Redis integration or upstream unit tests.
+To run them against an already installed package:
+
+```bash
+conda run -n nestdaq python recipe/run_cli_smoke.py
+```
+
+For a full package build including these tests, use the build command above.

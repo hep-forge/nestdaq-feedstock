@@ -1,0 +1,29 @@
+--- a/plugins/tools.cxx
++++ b/plugins/tools.cxx
+@@ -54,11 +54,11 @@
+     int ret = EXIT_SUCCESS;
+     try {
+         bpo::store(bpo::parse_command_line(argc, argv, options), vm);
++        if (vm.count("help") > 0) {
++            std::cout << options << std::endl;
++            return EXIT_SUCCESS;
++        }
+         bpo::notify(vm);
+-
+-        if (vm.count("help") > 0) {
+-            throw std::runtime_error("help");
+-        }
+ 
+     } catch (const bpo::error_with_option_name &e) {
+         std::cerr << "#Exception: boost program options error: " << e.what() << std::endl;
+--- a/controller/run_daq-webctl.cxx
++++ b/controller/run_daq-webctl.cxx
+@@ -123,7 +123,7 @@
+ 
+     bpo::variables_map vm;
+     auto ret = ParseCommandLine(argc, argv, MakeOption(), vm);
+-    if (ret!=EXIT_SUCCESS) {
++    if (ret!=EXIT_SUCCESS || vm.count("help") > 0) {
+         return ret;
+     }
+ 

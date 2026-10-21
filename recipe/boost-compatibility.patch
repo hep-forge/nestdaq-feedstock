@@ -39,27 +39,23 @@ index c7c8fd3..dfa92be 100644
              } else {
                  fClient->publish(fChannelName, toMessage(v));
 diff --git a/controller/websocket_session.cxx b/controller/websocket_session.cxx
-index 0632b73..a4fa9df 100644
+index 0632b73..c15e9be 100644
 --- a/controller/websocket_session.cxx
 +++ b/controller/websocket_session.cxx
-@@ -70,7 +70,7 @@ void websocket_session::on_read(beast::error_code ec, std::size_t bytes_transfer
+@@ -70,9 +70,8 @@ void websocket_session::on_read(beast::error_code ec, std::size_t bytes_transfer
              OnRead(id_, m);
  
          } else {
 -            const auto bufferBegin = net::buffer_cast<const char*>(beast::buffers_front(buffer_.data()));
-+            const auto bufferBegin = static_cast<const char*>(beast::buffers_front(buffer_.data()).data());
-             const auto bufferEnd = bufferBegin + net::buffer_size(buffer_.data());
-             std::vector<char> buf(bufferBegin, bufferEnd);
+-            const auto bufferEnd = bufferBegin + net::buffer_size(buffer_.data());
+-            std::vector<char> buf(bufferBegin, bufferEnd);
++            std::vector<char> buf(net::buffer_size(buffer_.data()));
++            net::buffer_copy(net::buffer(buf), buffer_.data());
  //      std::cout << "received message: got_text() ? " << ws_.got_text() << "\n"
-@@ -94,4 +94,4 @@ void websocket_session::write(const std::string &message)
- {
-     // synchronous write
-     ws_.write(net::buffer(message));
--}
-\ No newline at end of file
-+}
+ //                << " buffer (" << buffer_.size() << " bytes, "
+ //                << " transferred: " << bytes_transferred << " bytes)\n";
 diff --git a/plugins/tools.cxx b/plugins/tools.cxx
-index 0b9e987..182b087 100644
+index 0b9e987..20dbc7a 100644
 --- a/plugins/tools.cxx
 +++ b/plugins/tools.cxx
 @@ -1,3 +1,4 @@
@@ -73,19 +69,12 @@ index 0b9e987..182b087 100644
          net::ip::tcp::resolver resolver(ioc);
 -        net::ip::tcp::resolver::iterator end;
 -        auto it = std::find_if(resolver.resolve(name, "").begin(), end, [](const auto& entry) {
-+        const auto endpoints = resolver.resolve(name, "");
-+        auto it = std::find_if(endpoints.begin(), endpoints.end(), [](const auto& entry) {
++        const auto results = resolver.resolve(name, "");
++        auto it = std::find_if(results.begin(), results.end(), [](const auto& entry) {
              return entry.endpoint().address().is_v4();
          });
 -        if (it != end) {
-+        if (it != endpoints.end()) {
++        if (it != results.end()) {
              std::stringstream ss;
              ss <<  it->endpoint().address();
              return ss.str();
-@@ -93,4 +94,4 @@ std::string to_string(const boost::property_tree::ptree& pt, bool pretty)
-     std::ostringstream oss;
-     boost::property_tree::write_json(oss, pt, pretty);
-     return oss.str();
--}
-\ No newline at end of file
-+}

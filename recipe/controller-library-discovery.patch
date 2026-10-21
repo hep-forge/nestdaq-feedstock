@@ -1,0 +1,13 @@
+diff --git a/controller/CMakeLists.txt b/controller/CMakeLists.txt
+index 5a745ea..498c7fe 100644
+--- a/controller/CMakeLists.txt
++++ b/controller/CMakeLists.txt
+@@ -12,7 +12,7 @@ find_library(HIREDIS_LIB hiredis)
+ 
+ # --------- add redis++ dependency ----------
+ find_path(REDIS_PLUS_PLUS_HEADER sw)
+-find_path(REDIS_PLUS_PLUS_LIB redis++)
++find_library(REDIS_PLUS_PLUS_LIB redis++)
+ 
+ # ===============================================
+ # web gui using websocket

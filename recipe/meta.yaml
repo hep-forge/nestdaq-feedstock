@@ -16,9 +16,10 @@ source:
     - boost-compatibility.patch
     - portable-release-flags.patch
     - cli-help-success.patch
+    - controller-library-discovery.patch
 
 build:
-  number: 1
+  number: 2
   skip: true  # [not linux]
   run_exports:
     - {{ pin_subpackage("nestdaq", max_pin="x.x.x") }}

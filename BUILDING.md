@@ -17,19 +17,47 @@ runtime (redis-plus-plus currently requires libstdcxx >=15).
 
 The initial version `2026.10.20` is a dated upstream snapshot pinned to
 `eda728718362cc0ee169bea9b111ffc3fda7ca6b`, not upstream's older `v1.0.0` release.
-Patches retain Boost.Process v1 compatibility, update Asio APIs, and preserve
-conda's portable release flags instead of compiling with `-march=native`.
+Patches retain Boost.Process v1 compatibility, update Asio APIs, copy WebSocket
+binary payloads through `buffer_copy`, locate the controller Redis library with
+`find_library`, and preserve conda's portable release flags instead of compiling
+with `-march=native`.
 
 Redis server and Redis Stack modules remain separate runtime services.
+
+## Supported platforms
+
+This recipe supports Linux AMD64 (`linux-64`) and Linux ARM64
+(`linux-aarch64`). Native macOS (`osx-64`, `osx-arm64`) builds are skipped.
+A Linux container on macOS can use the matching Linux package after publication;
+changing conda's platform alone does not make Linux binaries run on macOS.
 
 ## Publication after merge
 
 Configure `ANACONDA_COMPILE=amd64` and `ANACONDA_PUBLISH=amd64` for an AMD-first
 release. Ensure the repository has access to the `ANACONDA_API_TOKEN` secret.
-Push numeric tag `2026.10.20` to trigger the canonical build/upload workflow.
+The supported release version is `2026.10.20` (recipe build 2). After merging,
+create that numeric tag on the new `main` commit to trigger the canonical
+build/upload workflow. Merging a PR or running CLI smoke CI does not publish.
+
+```bash
+git switch main
+git pull --ff-only origin main
+git tag 2026.10.20
+git push origin refs/tags/2026.10.20
+```
+
+Do not substitute `1.0.0`: the recipe's version/checksum mapping currently
+contains only the dated source snapshot. If the release tag already exists,
+use the meta-repository's documented `make retag nestdaq` procedure to rebuild
+the current recipe rather than silently building an old tag's recipe.
 After AMD64 succeeds, set both variables to `amd64,arm64` and rerun the workflow
 at that tag to publish ARM64 too. Branch and PR pushes do not publish packages.
 Do not tag before the recipe PR is merged.
+
+For the standard meta-repository sync and maintenance tools, register the
+feedstock as `feedstocks/nestdaq-feedstock` in `hep-forge/.github` after merge.
+This is a separate meta-repository change. Version-bot registration is optional,
+as described in the project rules.
 
 ## Install after publication
 

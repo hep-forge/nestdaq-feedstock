@@ -1,0 +1,25 @@
+name: Build and test NestDAQ package
+description: Build a native conda package and run its installed CLI smoke tests
+runs:
+  using: composite
+  steps:
+    - uses: conda-incubator/setup-miniconda@v3
+      with:
+        miniforge-version: latest
+        activate-environment: build-tools
+        python-version: '3.12'
+        channels: conda-forge
+        conda-remove-defaults: true
+    - name: Install conda-build
+      shell: bash -el {0}
+      run: conda install --yes --override-channels -c conda-forge conda-build conda-libmamba-solver
+    - name: Build package and run recipe smoke tests
+      shell: bash -el {0}
+      env:
+        CONDA_SOLVER: libmamba
+        CONDA_CHANNEL_PRIORITY: strict
+        CPU_COUNT: '2'
+      run: >-
+        conda-build recipe --no-anaconda-upload
+        --override-channels -c hep-forge -c conda-forge
+        --output-folder build_artifacts

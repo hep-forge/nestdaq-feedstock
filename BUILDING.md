@@ -15,13 +15,16 @@ use native runners through the canonical hep-forge tag workflow. GCC 14 and
 glibc 2.17 are pinned; dependency runtime libraries may require a newer GCC
 runtime (redis-plus-plus currently requires libstdcxx >=15).
 
-The package version is `head`, matching the rolling upstream-head convention.
-The source remains pinned to commit
-`eda728718362cc0ee169bea9b111ffc3fda7ca6b` and its SHA256 for reproducible builds.
-Updating the packaged source requires updating that commit and checksum and
-incrementing the build number. The initial `head` package starts at build 0.
-Shared-library run exports pin `head` and its recipe build number (allowing
-the platform hash) because `head` is not a semantic ABI version. Python 3.12
+There are two kinds of version:
+
+- `head` builds upstream `main` as it is at build time (git source, no checksum).
+  hep-bot rebuilds it when upstream `main` moves.
+- `2026.10.20` is a pinned snapshot: commit
+  `eda728718362cc0ee169bea9b111ffc3fda7ca6b` and the SHA256 of its archive. A new
+  snapshot is a new entry in `versions` and `commits` in `recipe/meta.yaml`.
+
+Shared-library run exports pin the version and the recipe build number (allowing
+the platform hash), because neither `head` nor a date is a semantic ABI version. Python 3.12
 is used only to run the CLI smoke checks.
 Patches retain Boost.Process v1 compatibility, update Asio APIs, copy WebSocket
 binary payloads through `buffer_copy`, locate the controller Redis library with
@@ -39,41 +42,24 @@ changing conda's platform alone does not make Linux binaries run on macOS.
 
 ## Publication after merge
 
-Configure `ANACONDA_COMPILE=amd64` and `ANACONDA_PUBLISH=amd64` for an AMD-first
-release. Ensure the repository has access to the `ANACONDA_API_TOKEN` secret.
-The release version is `head`. After merging, create a tag named `head` on the
-new `main` commit:
+Pushing a tag on `main` builds linux-64 and linux-aarch64 and uploads them:
 
-```bash
-git switch main
-git pull --ff-only origin main
-git tag head
-git push origin refs/tags/head
-```
+- tag `head`: the current upstream `main`. Move the tag to the tip of `main` to pick up
+  recipe changes (`git tag -f head && git push -f origin refs/tags/head`). hep-bot does
+  this by itself when upstream `main` moves.
+- tag `2026.10.20`: the pinned snapshot. hep-bot pushes this tag on its next run, because
+  the recipe carries a version that has no tag yet.
 
-The canonical workflow's automatic push trigger accepts numeric tags only.
-For this nonnumeric version, manually run **Anaconda Build & Upload** from
-GitHub Actions and select the **head tag**, not a branch. Its existing
-workflow_dispatch entry point accepts tag refs. A branch dispatch is skipped.
-The recipe's `extra.release_tags.main` entry keeps `head` eligible as a release
-during channel trimming. Neither PR smoke builds nor merging a PR publishes.
-Do not substitute `v1.0.0` or the old dated snapshot version.
-
-For a later head rebuild, increment the recipe build number and update the
-head tag through the project's retag procedure before dispatching at it.
-After AMD64 succeeds, set both variables to `amd64,arm64` and rerun the workflow
-at that tag to publish ARM64 too. Branch and PR pushes do not publish packages.
-Do not tag before the recipe PR is merged.
-
-For the standard meta-repository sync and maintenance tools, register the
-feedstock as `feedstocks/nestdaq-feedstock` in `hep-forge/.github` after merge.
-This is a separate meta-repository change. Version-bot registration is optional,
-as described in the project rules.
+Merging a PR or pushing to `main` publishes nothing. Don't use `v1.0.0`: it's an older
+upstream release this recipe doesn't build. The feedstock is registered in
+[hep-forge/.github](https://github.com/hep-forge/.github), which renders its CI workflow,
+README and AGENTS.md.
 
 ## Install after publication
 
 ```bash
-conda install -c hep-forge -c conda-forge nestdaq=head
+conda install -c hep-forge -c conda-forge nestdaq              # pinned snapshot
+conda install -c hep-forge -c conda-forge nestdaq=head         # upstream main
 ```
 
 ## Tests and pull requests
@@ -81,8 +67,7 @@ conda install -c hep-forge -c conda-forge nestdaq=head
 The separate `CLI smoke tests` workflow runs on pull requests and manual dispatch.
 It builds the conda package on AMD64 first, then ARM64, and runs the installed
 package's recipe tests. It uses read-only repository permissions and does not
-upload or publish packages. The canonical hep-forge release workflow is
-unchanged. Numeric tag pushes run automatically; the `head` tag uses the manual dispatch described above.
+upload or publish packages. It builds the first entry of `versions`, i.e. `head`.
 
 Recipe tests check installed plugins and web assets plus seven CLI cases:
 `Sampler`, `Sink`, and `NullDevice` help, both controller help flags, an unknown

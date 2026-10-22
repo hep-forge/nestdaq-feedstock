@@ -1,5 +1,11 @@
+{# "head" builds upstream main as it is now (no checksum). Numeric versions
+   are pinned upstream snapshots: commit + sha256 of its archive. #}
 {% set versions = {
-    "head": "d0a66a13c916cd15345218dfd3cda537297252210cd2aa8b5897c917011527b6"
+    "head": None,
+    "2026.10.20": "d0a66a13c916cd15345218dfd3cda537297252210cd2aa8b5897c917011527b6"
+} %}
+{% set commits = {
+    "2026.10.20": "eda728718362cc0ee169bea9b111ffc3fda7ca6b"
 } %}
 {% set version = environ.get('COMMIT_VERSION', None) %}
 {% set version = version or versions.keys()|first %}
@@ -11,9 +17,13 @@ package:
   version: {{ environ.get('ANACONDA_VERSION', version)|replace('-', '.') }}
 
 source:
-  # Pin upstream HEAD to a reproducible commit and checksum.
-  url: https://github.com/spadi-alliance/nestdaq/archive/eda728718362cc0ee169bea9b111ffc3fda7ca6b.tar.gz
+  {% if version == "head" %}
+  git_url: https://github.com/spadi-alliance/nestdaq
+  git_rev: HEAD
+  {% else %}
+  url: https://github.com/spadi-alliance/nestdaq/archive/{{ commits[version] }}.tar.gz
   sha256: {{ versions[version] }}
+  {% endif %}
   patches:
     - boost-compatibility.patch
     - portable-release-flags.patch

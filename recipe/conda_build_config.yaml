@@ -6,3 +6,16 @@ c_compiler_version:
   - 14                         # [linux]
 cxx_compiler_version:
   - 14                         # [linux]
+
+# Keep smithy's generated variant metadata on the same channels as hep-forge CI.
+channel_sources:
+  - hep-forge,conda-forge
+channel_targets:
+  - hep-forge main
+
+# Python is a CLI-test interpreter, not part of the C++ package's ABI.
+python:
+  - "3.12.* *_cpython"
+# Override the paired global pin as well, so smithy keeps only Python 3.12.
+is_python_min:
+  - false

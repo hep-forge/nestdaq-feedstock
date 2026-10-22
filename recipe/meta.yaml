@@ -1,15 +1,17 @@
 {% set versions = {
-    "2026.10.20": "d0a66a13c916cd15345218dfd3cda537297252210cd2aa8b5897c917011527b6"
+    "head": "d0a66a13c916cd15345218dfd3cda537297252210cd2aa8b5897c917011527b6"
 } %}
 {% set version = environ.get('COMMIT_VERSION', None) %}
-{% set version = (version or versions.keys()|first)|string %}
+{% set version = version or versions.keys()|first %}
+{% set version = version|string %}
+{% set build_number = 0 %}
 
 package:
   name: {{ environ.get('ANACONDA_PACKAGE', 'nestdaq')|string|lower }}
   version: {{ environ.get('ANACONDA_VERSION', version)|replace('-', '.') }}
 
 source:
-  # Dated snapshot of upstream main; not the older upstream v1.0.0 release.
+  # Pin upstream HEAD to a reproducible commit and checksum.
   url: https://github.com/spadi-alliance/nestdaq/archive/eda728718362cc0ee169bea9b111ffc3fda7ca6b.tar.gz
   sha256: {{ versions[version] }}
   patches:
@@ -19,10 +21,10 @@ source:
     - controller-library-discovery.patch
 
 build:
-  number: 2
+  number: {{ build_number }}
   skip: true  # [not linux]
   run_exports:
-    - {{ pin_subpackage("nestdaq", max_pin="x.x.x") }}
+    - nestdaq =={{ version }} *_{{ build_number }}
 
 requirements:
   build:
@@ -71,5 +73,9 @@ about:
   dev_url: https://github.com/spadi-alliance/nestdaq
 
 extra:
+  # Treat the rolling, nonnumeric head tag as a release during channel trimming.
+  release_tags:
+    main:
+      - head
   recipe-maintainers:
     - gw2015tylerdurden

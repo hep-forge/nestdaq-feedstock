@@ -52,8 +52,13 @@ source:
 
 build:
   number: 1
-  string: "root{{ root_tag }}_{{ PKG_BUILDNUM }}"
+  string: "root{{ root_tag }}"
   skip: true  # [not linux]
+  # No ROOT dictionaries yet, but this links against ROOT and could grow
+  # one -- keep conda-build's prefix relocation away from lib/*.pcm, as
+  # rapgap and xfitter do.
+  ignore_prefix_files:
+    - lib/*.pcm
   # max_pin computes an upper bound by incrementing the version, which
   # fails for "head"; pin the lower bound only (as root-plus does).
   run_exports:

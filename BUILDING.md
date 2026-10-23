@@ -12,9 +12,9 @@ Conda packaging for [NestDAQ](https://github.com/spadi-alliance/nestdaq) on the
    emulator, AmQStrTdcSampler, ... Its `Sampler` and `Sink` replace the nestdaq
    examples of the same name.
 
-ROOT 6.38 and ROOT+ (`root-plus`) come from hep-forge; the build string carries the ROOT
-line (`root638_<build>`). Redis server and Redis Stack modules are separate runtime
-services.
+ROOT 6.38 and ROOT+ (`root-plus`) come from hep-forge. The build string is the ROOT line
+(`root638`), as for rapgap and xfitter. Redis server and Redis Stack modules are separate
+runtime services.
 
 ## Build
 

@@ -1,6 +1,6 @@
-{# "head" follows the latest upstream commit; a release X.Y.Z builds the
-   upstream tag vX.Y.Z. nestdaq-user-impl and uhbook are always built on
-   top, from the ref listed for the same version. #}
+# "head" follows the latest upstream commit; a release X.Y.Z builds the
+# upstream tag vX.Y.Z. nestdaq-user-impl and uhbook are always built on
+# top, from the ref listed for the same version.
 {% set versions = {
     "head": "HEAD",
     "1.0.0": "v1.0.0"
@@ -9,7 +9,7 @@
     "head": "HEAD",
     "1.0.0": "v1.0.0"
 } %}
-{# uhbook has no tags: 1.0.0 uses the last commit before both v1.0.0 tags #}
+# uhbook has no tags: 1.0.0 uses the last commit before both v1.0.0 tags
 {% set uhbook = {
     "head": "HEAD",
     "1.0.0": "e979eb28fb64de2eb216ebec31f73a6696d257ec"

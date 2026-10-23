@@ -9,11 +9,16 @@ Feedstock for [nestdaq](https://github.com/spadi-alliance/nestdaq) — part of [
 Builds linux-amd64 + linux-arm64 in one matrix workflow and uploads to the
 [hep-forge](https://anaconda.org/hep-forge) Anaconda channel.
 
-Streaming data acquisition framework based on FairMQ and Redis
+Streaming data acquisition framework based on FairMQ and Redis, with the SPADI user implementation
 
 ## Architectures
 
-State per architecture: see the platforms badge above or [anaconda.org/hep-forge/nestdaq](https://anaconda.org/hep-forge/nestdaq).
+| Architecture | Latest published |
+|--------------|------------------|
+| linux-amd64 (`linux-64`) | ✅ `head` |
+| linux-arm64 (`linux-aarch64`) | ✅ `head` |
+
+_As of the last feedstock render; the badges above are live._
 
 
 ## Install
@@ -25,4 +30,5 @@ conda install -c hep-forge -c conda-forge nestdaq
 ## Maintainers
 
 * [@gw2015tylerdurden](https://github.com/gw2015tylerdurden/)
+* [@meiyasan](https://github.com/meiyasan/)
 

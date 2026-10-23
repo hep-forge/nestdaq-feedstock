@@ -1,0 +1,125 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index cdc64a4..154cfc2 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -32,7 +32,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+ 
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -Wfloat-equal -O3")
+-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG -march=native")
++# conda: keep the toolchain release flags (no -march=native) so the binaries run on any CPU.
+ message("")
+ message("CMAKE_CXX_FLAGS:                ${CMAKE_CXX_FLAGS}")
+ message("CMAKE_CXX_FLAGS_DEBUG:          ${CMAKE_CXX_FLAGS_DEBUG}")
+@@ -207,8 +207,7 @@ foreach(lvar IN ITEMS
+ #    ${FairLogger_LIBDIR};
+   )
+ 
+-  if ((FairMQ_VERSION VERSION_GREATER_EQUAL 1.8.0)
+-    AND (FairMQ_VERSION VERSION_LESS_EQUAL 1.8.9))
++  if ((FairMQ_VERSION VERSION_GREATER_EQUAL 1.8.0))
+     target_link_libraries(${EXEC} PUBLIC 
+       ${Boost_LIBRARIES};  
+       ${HIREDIS_LIB};
+@@ -268,8 +267,7 @@ target_link_directories(AmQStrTdcSampler PUBLIC
+     ${FairMQ_LIBDIR};
+ )
+ 
+-if ((FairMQ_VERSION VERSION_GREATER_EQUAL 1.8.0)
+-  AND (FairMQ_VERSION VERSION_LESS_EQUAL 1.8.9))
++if ((FairMQ_VERSION VERSION_GREATER_EQUAL 1.8.0))
+   target_link_libraries(AmQStrTdcSampler  PUBLIC
+     fairmq;
+     FairLogger;
+@@ -295,7 +293,7 @@ endif()
+ 
+ install(TARGETS
+     AmQStrTdcSampler
+-    RUNTIME DESTINATION ${PROJECT_INSTALL_BINDIR}
++    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+ )
+ 
+ 
+@@ -329,8 +327,7 @@ target_link_directories(${EXEC} PUBLIC
+     ${ROOT_LIBRARIES};
+ )
+ 
+-if ((FairMQ_VERSION VERSION_GREATER_EQUAL 1.8.0)
+-  AND (FairMQ_VERSION VERSION_LESS_EQUAL 1.8.9))
++if ((FairMQ_VERSION VERSION_GREATER_EQUAL 1.8.0))
+   target_link_libraries(${EXEC} PUBLIC 
+     ${Boost_LIBRARIES};  
+     fairmq
+@@ -357,8 +354,7 @@ endif()
+ 
+ install(TARGETS ${EXEC};
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-    #RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+-    RUNTIME DESTINATION ${INSTALL_BINDIR}
++    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+ )
+ 
+ endforeach()
+diff --git a/emulator/CMakeLists.txt b/emulator/CMakeLists.txt
+index 987191d..77d0439 100644
+--- a/emulator/CMakeLists.txt
++++ b/emulator/CMakeLists.txt
+@@ -8,8 +8,6 @@ add_library(AmQTdcModule
+ 	AmQTdc.cxx;
+ 	)
+ #==============================================
+-install(TARGETS emulator 
+-	AmQTdcModule;
+-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} 
+-	RUNTIME DESTINATION ./emulator/bin
++install(TARGETS emulator
++	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+ )
+diff --git a/sqlite/CMakeLists.txt b/sqlite/CMakeLists.txt
+index e92cb2e..582bab1 100644
+--- a/sqlite/CMakeLists.txt
++++ b/sqlite/CMakeLists.txt
+@@ -26,11 +26,4 @@ target_link_libraries(sqlite3 PRIVATE
+ )
+ 
+ 
+-#========== install ===========
+-install(TARGETS sqlite3a
+-  sqlite3;
+-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-)
+-
+-
++# conda: bundled sqlite is linked statically; conda provides sqlite itself.
+diff --git a/utility/CMakeLists.txt b/utility/CMakeLists.txt
+index bf085ef..3dde87a 100644
+--- a/utility/CMakeLists.txt
++++ b/utility/CMakeLists.txt
+@@ -108,13 +108,4 @@ target_link_libraries(Utility
+ )
+ 
+ 
+-#_______________________________________________________________________________
+-install(TARGETS
+-  ${SimpleLibList};
+-  program_options;
+-#  RegisterMap;
+-#  Options;
+-  Utility;
+-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-)
++# conda: static helper libraries, linked into the executables; not installed.
+diff --git a/utility/TaskProcessorMT.cxx b/utility/TaskProcessorMT.cxx
+index 65d6e12..b6be018 100644
+--- a/utility/TaskProcessorMT.cxx
++++ b/utility/TaskProcessorMT.cxx
+@@ -4,6 +4,7 @@
+ #include "utility/TaskProcessorMT.h"
+ 
+ #include <fairmq/FairMQLogger.h>
++#include <fairmq/Transports.h>
+ 
+ namespace nestdaq {
+ //_____________________________________________________________________________

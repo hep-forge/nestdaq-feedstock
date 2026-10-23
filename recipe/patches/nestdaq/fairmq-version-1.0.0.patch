@@ -1,0 +1,28 @@
+diff --git a/controller/CMakeLists.txt b/controller/CMakeLists.txt
+index 01f9c73..5a745ea 100644
+--- a/controller/CMakeLists.txt
++++ b/controller/CMakeLists.txt
+@@ -45,8 +45,7 @@ target_link_directories(${EXEC} PUBLIC
+   ${FairMQ_LIBDIR};
+ )
+ 
+-if ((FairMQ_VERSION VERSION_GREATER_EQUAL 1.8.0)
+-  AND (FairMQ_VERSION VERSION_LESS_EQUAL 1.8.9))
++if (FairMQ_VERSION VERSION_GREATER_EQUAL 1.8.0)
+   target_link_libraries(${EXEC} PUBLIC
+     ${Boost_LIBRARIES};
+     fairmq;
+diff --git a/examples/CMakeLists.txt b/examples/CMakeLists.txt
+index 662730b..f2517d3 100644
+--- a/examples/CMakeLists.txt
++++ b/examples/CMakeLists.txt
+@@ -18,8 +18,7 @@ foreach(lvar IN ITEMS Sampler; Sink; NullDevice;)
+     ${FairMQ_LIBDIR};
+   )
+ 
+-  if ((FairMQ_VERSION VERSION_GREATER_EQUAL 1.8.0)
+-    AND (FairMQ_VERSION VERSION_LESS_EQUAL 1.8.9))
++  if (FairMQ_VERSION VERSION_GREATER_EQUAL 1.8.0)
+     target_link_libraries(${EXEC} PUBLIC 
+       ${Boost_LIBRARIES};  
+       ${fmt_LIB};

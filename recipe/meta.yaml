@@ -1,40 +1,84 @@
-{# "head" builds upstream main as it is now (no checksum). Numeric versions
-   are pinned upstream snapshots: commit + sha256 of its archive. #}
+{# "head" follows the latest upstream commit; a release X.Y.Z builds the
+   upstream tag vX.Y.Z. nestdaq-user-impl and uhbook are always built on
+   top, from the ref listed for the same version. #}
 {% set versions = {
-    "head": None,
-    "2026.10.20": "d0a66a13c916cd15345218dfd3cda537297252210cd2aa8b5897c917011527b6"
+    "head": "HEAD",
+    "1.0.0": "v1.0.0"
 } %}
-{% set commits = {
-    "2026.10.20": "eda728718362cc0ee169bea9b111ffc3fda7ca6b"
+{% set user_impl = {
+    "head": "HEAD",
+    "1.0.0": "v1.0.0"
 } %}
+{# uhbook has no tags: 1.0.0 uses the last commit before both v1.0.0 tags #}
+{% set uhbook = {
+    "head": "HEAD",
+    "1.0.0": "e979eb28fb64de2eb216ebec31f73a6696d257ec"
+} %}
+
 {% set version = environ.get('COMMIT_VERSION', None) %}
 {% set version = version or versions.keys()|first %}
 {% set version = version|string %}
-{% set build_number = 0 %}
+
+{% set name = environ.get('ANACONDA_PACKAGE', "nestdaq")|string|lower %}
 
 package:
-  name: {{ environ.get('ANACONDA_PACKAGE', 'nestdaq')|string|lower }}
-  version: {{ environ.get('ANACONDA_VERSION', version)|replace('-', '.') }}
+  name: {{ name }}
+  version: {{ environ.get('ANACONDA_VERSION', version)|replace("-", ".") }}
+{% set root_tag = (root or '')|replace('.', '') %}
 
 source:
-  {% if version == "head" %}
-  git_url: https://github.com/spadi-alliance/nestdaq
-  git_rev: HEAD
-  {% else %}
-  url: https://github.com/spadi-alliance/nestdaq/archive/{{ commits[version] }}.tar.gz
-  sha256: {{ versions[version] }}
-  {% endif %}
-  patches:
-    - boost-compatibility.patch
-    - portable-release-flags.patch
-    - cli-help-success.patch
-    - controller-library-discovery.patch
+  - git_url: "https://github.com/spadi-alliance/nestdaq"
+    git_rev: {{ versions.get(version, "v" ~ version) }}
+    patches:
+      # Boost.Process v1 compatibility, current Asio APIs, WebSocket
+      # payloads copied through buffer_copy.
+      - patches/nestdaq/boost-compatibility.patch
+      # Keep conda's release flags instead of -march=native (top-level
+      # CMakeLists.txt in 1.0.0, cmake/common.cmake later).
+{% if version == "1.0.0" %}
+      - patches/nestdaq/portable-release-flags-1.0.0.patch
+      # Accept FairMQ >= 1.8 (1.0.0 stops at 1.8.9); backport of upstream main.
+      - patches/nestdaq/fairmq-version-1.0.0.patch
+{% else %}
+      - patches/nestdaq/portable-release-flags.patch
+{% endif %}
+      # --help exits 0 before the controller starts its services.
+      - patches/nestdaq/cli-help-success.patch
+      # Locate the controller's Redis library with find_library.
+      - patches/nestdaq/controller-library-discovery.patch
+
+  - git_url: "https://github.com/spadi-alliance/nestdaq-user-impl"
+    git_rev: {{ user_impl.get(version, "v" ~ version) }}
+    folder: user-impl
+    patches:
+      # Accept the FairMQ 1.11 of this channel (1.0.0 stops at 1.8.x and
+      # lacks the <fairmq/Transports.h> include, main stops at 1.10.0 and at
+      # 1.8 in LogicFilter/TriggerView), no -march=native,
+      # every executable in bin/, internal static libraries and bundled
+      # sqlite not installed.
+{% if version == "1.0.0" %}
+      - patches/user-impl/conda-build-1.0.0.patch
+{% else %}
+      - patches/user-impl/conda-build.patch
+{% endif %}
+
+  - git_url: "https://github.com/spadi-alliance/uhbook"
+    git_rev: {{ uhbook.get(version, "HEAD") }}
+    folder: uhbook
 
 build:
-  number: {{ build_number }}
+  number: 1
+  string: "root{{ root_tag }}"
   skip: true  # [not linux]
+  # No ROOT dictionaries yet, but this links against ROOT and could grow
+  # one -- keep conda-build's prefix relocation away from lib/*.pcm, as
+  # rapgap and xfitter do.
+  ignore_prefix_files:
+    - lib/*.pcm
+  # max_pin computes an upper bound by incrementing the version, which
+  # fails for "head"; pin the lower bound only (as root-plus does).
   run_exports:
-    - nestdaq =={{ version }} *_{{ build_number }}
+    - {{ pin_subpackage(name, max_pin=None) }}
 
 requirements:
   build:
@@ -43,7 +87,11 @@ requirements:
     - {{ stdlib('c') }}
     - cmake >=3.26.5,<4
     - ninja
+    - git
+
   host:
+    - root {{ root }}.*
+    - root-plus * *_root{{ root_tag }}
     - fairmq >=1.11,<1.12
     - fairlogger >=2.3,<3
     - libboost-devel !=1.88.*
@@ -51,6 +99,8 @@ requirements:
     - libhiredis >=1.3,<1.4
     - redis-plus-plus >=1.3.15,<1.4
   run:
+    - root {{ root }}.*
+    - root-plus * *_root{{ root_tag }}
     - fairmq >=1.11,<1.12
     - fairlogger >=2.3,<3
     - libboost
@@ -63,29 +113,38 @@ test:
   files:
     - run_cli_smoke.py
   commands:
+    # nestdaq plugins and controller
     - test -f "${PREFIX}/lib/libFairMQPlugin_daq_service.so"
     - test -f "${PREFIX}/lib/libFairMQPlugin_metrics.so"
     - test -f "${PREFIX}/lib/libFairMQPlugin_parameter_config.so"
     - test -f "${PREFIX}/lib/libFairMQPlugin_telemetry.so"
     - test -f "${PREFIX}/share/controller/daq-webctl.html"
+    # nestdaq-user-impl devices and tools
+    {% for exe in ["STFBuilder", "TimeFrameBuilder", "FileSink", "AmQStrTdcSampler", "TriggerView", "LogicFilter", "emulator", "tfdump"] %}
+    - test -x "${PREFIX}/bin/{{ exe }}"
+    {% endfor %}
+    - test -f "${PREFIX}/include/uhbook/uhbook.cxx"
     - python run_cli_smoke.py
 
 about:
-  home: https://github.com/spadi-alliance/nestdaq
-  license: MIT
-  license_file: LICENSE
-  summary: Streaming data acquisition framework based on FairMQ and Redis
+  home: "https://github.com/spadi-alliance/nestdaq"
+  license: "MIT"
+  license_file:
+    - LICENSE
+    - user-impl/LICENSE
+    - uhbook/LICENSE
+  summary: "Streaming data acquisition framework based on FairMQ and Redis, with the SPADI user implementation"
   description: |
-    NestDAQ provides FairMQ plugins, example devices, and a web controller
-    for streaming data acquisition. This package contains the application
-    and plugins; Redis server and Redis Stack modules are separate runtime
-    services and are not built by this recipe.
-  dev_url: https://github.com/spadi-alliance/nestdaq
+    NestDAQ provides FairMQ plugins, example devices and a web controller for
+    streaming data acquisition. This package also builds nestdaq-user-impl on
+    top of it (Sampler, Sink, FileSink, STFBuilder, TimeFrameBuilder, filters,
+    TriggerView, emulator, ...; its Sampler and Sink replace the nestdaq
+    examples, as in an upstream install) and ships the uhbook headers. ROOT
+    and ROOT+ (root-plus) come from hep-forge. Redis server and Redis Stack
+    modules are separate runtime services.
+  dev_url: "https://github.com/spadi-alliance/nestdaq-user-impl"
 
 extra:
-  # Treat the rolling, nonnumeric head tag as a release during channel trimming.
-  release_tags:
-    main:
-      - head
   recipe-maintainers:
     - gw2015tylerdurden
+    - meiyasan

@@ -1,3 +1,7 @@
+# ROOT line shared with root-plus (published for root 6.38 only).
+root:
+  - 6.38
+
 c_stdlib:
   - sysroot                    # [linux]
 c_stdlib_version:

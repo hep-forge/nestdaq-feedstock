@@ -1,0 +1,28 @@
+diff --git a/plugins/DaqServicePlugin.cxx b/plugins/DaqServicePlugin.cxx
+index 64c08e4..745bbff 100644
+--- a/plugins/DaqServicePlugin.cxx
++++ b/plugins/DaqServicePlugin.cxx
+@@ -9,6 +9,10 @@
+ #include <sstream>
+ #include <vector>
+ 
++#ifdef __APPLE__
++#include <crt_externs.h>
++#endif
++
+ #include <boost/uuid/uuid_io.hpp>
+ #include <boost/uuid/uuid_generators.hpp>
+ #include <boost/property_tree/json_parser.hpp>
+@@ -968,7 +972,12 @@ void Plugin::SetProcessName()
+     //  LOG(debug) << " program_invocation_name : " << program_invocation_name;
+     //  LOG(debug) << " program_invocation_short_name : " << program_invocation_short_name;
+ 
++#ifdef __APPLE__
++    // glibc's program_invocation_name is argv[0]; macOS keeps it in _NSGetArgv().
++    fProcessName = (*_NSGetArgv())[0];
++#else
+     fProcessName = program_invocation_name;
++#endif
+     LOG(debug) << " process : " << fPid << " " << fProcessName;
+     if (!PropertyExists("process-name")) {
+         SetProperty("process-name", fProcessName);

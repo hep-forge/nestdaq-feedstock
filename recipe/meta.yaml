@@ -46,6 +46,9 @@ source:
       - patches/nestdaq/cli-help-success.patch
       # Locate the controller's Redis library with find_library.
       - patches/nestdaq/controller-library-discovery.patch
+      # macOS has no glibc program_invocation_name; read argv[0] from
+      # _NSGetArgv() there.
+      - patches/nestdaq/macos-process-name.patch
 
   - git_url: "https://github.com/spadi-alliance/nestdaq-user-impl"
     git_rev: {{ user_impl.get(version, "v" ~ version) }}
@@ -69,7 +72,6 @@ source:
 build:
   number: 1
   string: "root{{ root_tag }}"
-  skip: true  # [not linux]
   # No ROOT dictionaries yet, but this links against ROOT and could grow
   # one -- keep conda-build's prefix relocation away from lib/*.pcm, as
   # rapgap and xfitter do.
@@ -114,10 +116,10 @@ test:
     - run_cli_smoke.py
   commands:
     # nestdaq plugins and controller
-    - test -f "${PREFIX}/lib/libFairMQPlugin_daq_service.so"
-    - test -f "${PREFIX}/lib/libFairMQPlugin_metrics.so"
-    - test -f "${PREFIX}/lib/libFairMQPlugin_parameter_config.so"
-    - test -f "${PREFIX}/lib/libFairMQPlugin_telemetry.so"
+    - test -f "${PREFIX}/lib/libFairMQPlugin_daq_service${SHLIB_EXT}"
+    - test -f "${PREFIX}/lib/libFairMQPlugin_metrics${SHLIB_EXT}"
+    - test -f "${PREFIX}/lib/libFairMQPlugin_parameter_config${SHLIB_EXT}"
+    - test -f "${PREFIX}/lib/libFairMQPlugin_telemetry${SHLIB_EXT}"
     - test -f "${PREFIX}/share/controller/daq-webctl.html"
     # nestdaq-user-impl devices and tools
     {% for exe in ["STFBuilder", "TimeFrameBuilder", "FileSink", "AmQStrTdcSampler", "TriggerView", "LogicFilter", "emulator", "tfdump"] %}

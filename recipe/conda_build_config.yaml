@@ -4,12 +4,20 @@ root:
 
 c_stdlib:
   - sysroot                    # [linux]
-c_stdlib_version:
+  - macosx_deployment_target   # [osx]
+c_stdlib_version:              # [unix]
   - 2.17                       # [linux]
-c_compiler_version:
+  # macOS 13.3: root-plus (kalman's Accelerate CBLAS) needs 13.3
+  - 13.3                       # [osx]
+c_compiler_version:    # [linux]
   - 14                         # [linux]
-cxx_compiler_version:
+cxx_compiler_version:    # [linux]
   - 14                         # [linux]
+# macOS: the clang ROOT is built with (root-feedstock pins 20).
+c_compiler_version:    # [osx]
+  - 20                         # [osx]
+cxx_compiler_version:  # [osx]
+  - 20                         # [osx]
 
 # Keep smithy's generated variant metadata on the same channels as hep-forge CI.
 channel_sources:

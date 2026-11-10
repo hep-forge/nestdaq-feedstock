@@ -10,9 +10,9 @@ c_stdlib_version:              # [unix]
   # macOS 13.3: root-plus (kalman's Accelerate CBLAS) needs 13.3
   - 13.3                       # [osx]
 c_compiler_version:    # [linux]
-  - 14                         # [linux]
+  - 16                         # [linux]
 cxx_compiler_version:    # [linux]
-  - 14                         # [linux]
+  - 16                         # [linux]
 # macOS: the clang ROOT is built with (root-feedstock pins 20).
 c_compiler_version:    # [osx]
   - 20                         # [osx]
@@ -31,3 +31,7 @@ python:
 # Override the paired global pin as well, so smithy keeps only Python 3.12.
 is_python_min:
   - false
+
+# conda-forge root_base variant (cxx20/cxx23 in its build string)
+root_cxx_standard:
+  - 23

@@ -55,6 +55,9 @@ source:
       # a global cannot be captured by a lambda: clang rejects what gcc
       # only warns about (run_daq-webctl.cxx)
       - patches/nestdaq/clang-global-capture.patch
+      # the FairMQ plugins link FairMQ, FairLogger and Boost like the
+      # examples do: macOS resolves every symbol at link time
+      - patches/nestdaq/plugins-link-dependencies.patch
 
   - git_url: "https://github.com/spadi-alliance/nestdaq-user-impl"
     git_rev: {{ user_impl.get(version, "v" ~ version) }}

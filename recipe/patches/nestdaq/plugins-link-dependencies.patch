@@ -1,0 +1,80 @@
+diff --git a/plugins/CMakeLists.txt b/plugins/CMakeLists.txt
+index 121fb02..180bcf0 100644
+--- a/plugins/CMakeLists.txt
++++ b/plugins/CMakeLists.txt
+@@ -32,7 +32,18 @@ target_include_directories(${PLUGIN} PRIVATE
+   ${CMAKE_SOURCE_DIR};
+ )
+ 
++# Link what the plugin uses, as examples/ and controller/ do: macOS (two-
++# level namespace) resolves every symbol at link time, unlike Linux.
++target_link_directories(${PLUGIN} PRIVATE
++  ${Boost_LIBRARY_DIRS};
++  ${FairLogger_LIBDIR};
++  ${FairMQ_LIBDIR};
++)
+ target_link_libraries(${PLUGIN}
++  ${Boost_LIBRARIES};
++  fairmq;
++  FairLogger;
++  ${fmt_LIB};
+   ${CMAKE_THREAD_LIBS_INIT};
+   ${HIREDIS_LIB};
+   ${REDIS_PLUS_PLUS_LIB};
+@@ -59,7 +70,18 @@ target_include_directories(${PLUGIN} PRIVATE
+   ${CMAKE_SOURCE_DIR};
+ )
+ 
++# Link what the plugin uses, as examples/ and controller/ do: macOS (two-
++# level namespace) resolves every symbol at link time, unlike Linux.
++target_link_directories(${PLUGIN} PRIVATE
++  ${Boost_LIBRARY_DIRS};
++  ${FairLogger_LIBDIR};
++  ${FairMQ_LIBDIR};
++)
+ target_link_libraries(${PLUGIN}
++  ${Boost_LIBRARIES};
++  fairmq;
++  FairLogger;
++  ${fmt_LIB};
+   ${CMAKE_THREAD_LIBS_INIT};
+   ${HIREDIS_LIB};
+   ${REDIS_PLUS_PLUS_LIB};
+@@ -83,7 +105,18 @@ target_include_directories(${PLUGIN} PRIVATE
+   ${CMAKE_SOURCE_DIR};
+ )
+ 
++# Link what the plugin uses, as examples/ and controller/ do: macOS (two-
++# level namespace) resolves every symbol at link time, unlike Linux.
++target_link_directories(${PLUGIN} PRIVATE
++  ${Boost_LIBRARY_DIRS};
++  ${FairLogger_LIBDIR};
++  ${FairMQ_LIBDIR};
++)
+ target_link_libraries(${PLUGIN}
++  ${Boost_LIBRARIES};
++  fairmq;
++  FairLogger;
++  ${fmt_LIB};
+   ${CMAKE_THREAD_LIBS_INIT};
+   ${HIREDIS_LIB};
+   ${REDIS_PLUS_PLUS_LIB};
+@@ -106,7 +139,18 @@ target_include_directories(${PLUGIN} PRIVATE
+   ${CMAKE_SOURCE_DIR};
+ )
+ 
++# Link what the plugin uses, as examples/ and controller/ do: macOS (two-
++# level namespace) resolves every symbol at link time, unlike Linux.
++target_link_directories(${PLUGIN} PRIVATE
++  ${Boost_LIBRARY_DIRS};
++  ${FairLogger_LIBDIR};
++  ${FairMQ_LIBDIR};
++)
+ target_link_libraries(${PLUGIN}
++  ${Boost_LIBRARIES};
++  fairmq;
++  FairLogger;
++  ${fmt_LIB};
+   ${CMAKE_THREAD_LIBS_INIT};
+ )
+ 

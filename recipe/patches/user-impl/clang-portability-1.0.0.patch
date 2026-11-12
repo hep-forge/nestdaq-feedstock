@@ -1,0 +1,36 @@
+diff --git a/TFBFilePlayer.cxx b/TFBFilePlayer.cxx
+index 28618a9..fd74326 100644
+--- a/TFBFilePlayer.cxx
++++ b/TFBFilePlayer.cxx
+@@ -227,7 +227,7 @@ bool TFBFilePlayer::ConditionalRun()
+             //---------------------------------
+             case AmQStrTdc::Data::Heartbeat: {
+                 //FairMQMessage [[maybe_unused]] *pmsg;
+-                fair::mq::Message [[maybe_unused]] *pmsg;
++                [[maybe_unused]] fair::mq::Message *pmsg;
+                 if (fSplitMethod == 0) {
+                     outParts.AddPart(NewMessage(sizeof(uint64_t) * (ptr - wBegin + 1)));
+                     auto & msg = outParts[outParts.Size() - 1];
+@@ -287,7 +287,7 @@ bool TFBFilePlayer::ConditionalRun()
+             }
+             case AmQStrTdc::Data::Heartbeat2nd: {
+                 //FairMQMessage [[maybe_unused]] *pmsg;
+-                fair::mq::Message [[maybe_unused]] *pmsg;
++                [[maybe_unused]] fair::mq::Message *pmsg;
+                 if (fSplitMethod == 2) {
+                     outParts.AddPart(NewMessage(sizeof(uint64_t) * (ptr - wBegin + 1)));
+                     auto & msg = outParts[outParts.Size() - 1];
+diff --git a/utility/BitDump.hh b/utility/BitDump.hh
+index b8297f0..6c7370c 100644
+--- a/utility/BitDump.hh
++++ b/utility/BitDump.hh
+@@ -10,8 +10,8 @@
+ namespace hddaq
+ {
+ 
++// no std::unary_function base: removed in C++17, gone from libc++
+ class BitDump
+-    : public std::unary_function<unsigned int, void>
+ {
+ private:
+     int m_count;

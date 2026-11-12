@@ -1,0 +1,14 @@
+diff --git a/controller/run_daq-webctl.cxx b/controller/run_daq-webctl.cxx
+index 430b04c..54a5d9a 100644
+--- a/controller/run_daq-webctl.cxx
++++ b/controller/run_daq-webctl.cxx
+@@ -156,7 +156,8 @@ int main(int argc, char* argv[])
+         return EXIT_FAILURE;
+     }
+     // ============================================
+-    daqControl->SetSendFunction([&wsSessions](auto connid, const auto& arg) {
++    // wsSessions is a global: used directly, it cannot be captured (clang)
++    daqControl->SetSendFunction([](auto connid, const auto& arg) {
+         if (wsSessions.empty()) {
+             LOG(debug) << " no websocket clients";
+             std::this_thread::sleep_for(std::chrono::milliseconds(1000));

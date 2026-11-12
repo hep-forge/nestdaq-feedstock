@@ -1,3 +1,18 @@
+diff --git a/plugins/MetricsPlugin.cxx b/plugins/MetricsPlugin.cxx
+index 70f46c5..e8d3a69 100644
+--- a/plugins/MetricsPlugin.cxx
++++ b/plugins/MetricsPlugin.cxx
+@@ -169,7 +169,9 @@ daq::service::MetricsPlugin::MetricsPlugin(std::string_view name,
+     if (PropertyExists("created-time")) {
+         auto t = GetProperty<int64_t>("created-time");
+         std::chrono::nanoseconds dur(t);
+-        fCreatedTimeSystem = std::chrono::time_point<std::chrono::system_clock>(dur);
++        // system_clock is microseconds in libc++ (macOS): convert first
++        fCreatedTimeSystem = std::chrono::system_clock::time_point(
++            std::chrono::duration_cast<std::chrono::system_clock::duration>(dur));
+     } else {
+         fCreatedTimeSystem = std::chrono::system_clock::now();
+     }
 diff --git a/plugins/TimeUtil.cxx b/plugins/TimeUtil.cxx
 index 12f087c..42f3adb 100644
 --- a/plugins/TimeUtil.cxx

@@ -49,9 +49,12 @@ source:
       # macOS has no glibc program_invocation_name; read argv[0] from
       # _NSGetArgv() there.
       - patches/nestdaq/macos-process-name.patch
-      # libc++'s system_clock counts microseconds: cast s + nanoseconds back
-      # to system_clock::time_point (TimeUtil.cxx fails to compile on macOS)
+      # libc++'s system_clock counts microseconds: convert nanoseconds to
+      # system_clock's own duration (TimeUtil.cxx, MetricsPlugin.cxx)
       - patches/nestdaq/macos-system-clock-precision.patch
+      # a global cannot be captured by a lambda: clang rejects what gcc
+      # only warns about (run_daq-webctl.cxx)
+      - patches/nestdaq/clang-global-capture.patch
 
   - git_url: "https://github.com/spadi-alliance/nestdaq-user-impl"
     git_rev: {{ user_impl.get(version, "v" ~ version) }}
@@ -62,10 +65,14 @@ source:
       # 1.8 in LogicFilter/TriggerView), no -march=native,
       # every executable in bin/, internal static libraries and bundled
       # sqlite not installed.
+      # clang/libc++ (macOS): [[maybe_unused]] before the declaration, not
+      # inside the type; no std::unary_function (removed in C++17)
 {% if version == "1.0.0" %}
       - patches/user-impl/conda-build-1.0.0.patch
+      - patches/user-impl/clang-portability-1.0.0.patch
 {% else %}
       - patches/user-impl/conda-build.patch
+      - patches/user-impl/clang-portability.patch
 {% endif %}
 
   - git_url: "https://github.com/spadi-alliance/uhbook"

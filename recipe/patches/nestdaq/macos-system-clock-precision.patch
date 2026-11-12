@@ -1,0 +1,14 @@
+diff --git a/plugins/TimeUtil.cxx b/plugins/TimeUtil.cxx
+index 12f087c..42f3adb 100644
+--- a/plugins/TimeUtil.cxx
++++ b/plugins/TimeUtil.cxx
+@@ -22,5 +22,7 @@ auto daq::service::update_date(const std::chrono::system_clock::time_point &s,
+ -> const std::pair<std::chrono::nanoseconds, std::chrono::system_clock::time_point>
+ {
+     auto uptimeNsec = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - t);
+-    return {uptimeNsec, (s + std::chrono::duration_cast<std::chrono::nanoseconds>(uptimeNsec))};
++    // system_clock is microseconds in libc++ (macOS): s + nanoseconds is a
++    // finer time_point than system_clock::time_point, so cast it back
++    return {uptimeNsec, std::chrono::time_point_cast<std::chrono::system_clock::duration>(s + uptimeNsec)};
+ }
+\ No newline at end of file

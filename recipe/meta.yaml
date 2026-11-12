@@ -49,6 +49,9 @@ source:
       # macOS has no glibc program_invocation_name; read argv[0] from
       # _NSGetArgv() there.
       - patches/nestdaq/macos-process-name.patch
+      # libc++'s system_clock counts microseconds: cast s + nanoseconds back
+      # to system_clock::time_point (TimeUtil.cxx fails to compile on macOS)
+      - patches/nestdaq/macos-system-clock-precision.patch
 
   - git_url: "https://github.com/spadi-alliance/nestdaq-user-impl"
     git_rev: {{ user_impl.get(version, "v" ~ version) }}
